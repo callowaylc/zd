@@ -5,9 +5,7 @@ import (
   "runtime"
   "fmt"
   _ "log"
-  yaml "gopkg.in/yaml.v2"
   _ "net/http"
-  _ "io/ioutil"
   "github.com/callowaylc/ter/config"
 )
 
@@ -20,9 +18,7 @@ func init() {
 }
 
 func main() {
-  var config config.Config
-  yaml.Unmarshal([]byte("login: www.msn.com"), &config)
-  fmt.Println("%+v", config)
+  fmt.Println("%+v\n", config.Get())
   /*
   response, err := http.Get("http://www.theeroticreview.com")
   if err != nil {
