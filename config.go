@@ -1,4 +1,4 @@
-package config
+package ter
 
 import (
   "io/ioutil"
@@ -10,7 +10,7 @@ type Config struct {
 }
 var c *Config
 
-func Get() Config {
+func GetConfig() Config {
   if c == nil {
     c = &Config{}
     contents, err := ioutil.ReadFile("./config.yml")

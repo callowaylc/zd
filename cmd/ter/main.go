@@ -6,7 +6,7 @@ import (
   "fmt"
   _ "log"
   _ "net/http"
-  "github.com/callowaylc/ter/config"
+  app "github.com/callowaylc/ter"
 )
 
 func init() {
@@ -18,7 +18,9 @@ func init() {
 }
 
 func main() {
-  fmt.Println("%+v\n", config.Get())
+  var m = fmt.Sprintf("start application with config %+v", app.GetConfig())
+  app.Logs(m, nil)
+
   /*
   response, err := http.Get("http://www.theeroticreview.com")
   if err != nil {
