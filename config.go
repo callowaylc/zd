@@ -7,6 +7,7 @@ import (
 
 type Config struct {
   Login string
+  List string
 }
 var c *Config
 

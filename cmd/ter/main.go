@@ -5,8 +5,10 @@ import (
   "runtime"
   "fmt"
   _ "log"
-  _ "net/http"
+  "net/http"
+  "io/ioutil"
   app "github.com/callowaylc/ter"
+
 )
 
 func init() {
@@ -17,9 +19,30 @@ func init() {
   }
 }
 
+
 func main() {
-  var m = fmt.Sprintf("start application with config %+v", app.GetConfig())
-  app.Logs(m, nil)
+  config := app.GetConfig()
+  message := fmt.Sprintf("start application with config %+v", config)
+  app.Logs(message, nil)
+
+
+  // get list and parse
+  content, err := app.Memoize(func() interface{} {
+    resp, err := http.Get(config.List)
+    if err != nil {
+      // handle error
+    }
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+
+    return string(body)
+  });
+
+  if err != nil {
+
+  }
+
+  fmt.Println(content)
 
   /*
   response, err := http.Get("http://www.theeroticreview.com")
