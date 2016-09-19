@@ -1,4 +1,4 @@
-package ter
+package zd
 
 import (
   "io/ioutil"

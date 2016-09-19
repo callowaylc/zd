@@ -1,8 +1,9 @@
-package ter
+package zd
 
 import (
   "os"
   "time"
+  "fmt"
   log "github.com/Sirupsen/logrus"
 )
 
@@ -14,11 +15,11 @@ func init() {
   log.SetLevel(log.InfoLevel)
 }
 
-func Logs (message string, entry Entry) {
+func Logs (message interface{}, entry Entry) {
   if entry == nil {
     entry = map[string]interface{}{}
   }
   entry["time"] = time.Now()
 
-  log.WithFields(map[string]interface{}(entry)).Info(message)
+  log.WithFields(map[string]interface{}(entry)).Info(fmt.Sprintf("%v", message))
 }

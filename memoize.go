@@ -1,8 +1,7 @@
-package ter
+package zd
 
 import (
   "fmt"
-  "os"
   "gopkg.in/redis.v4"
 )
 
@@ -21,7 +20,7 @@ func Memoize(lambda interface {}) (interface{}, error) {
 
   // unpack lambda from interface and generate key
   // based on lambda signature
-  f := lambda.(func() interface{})
+  f := lambda.(func() (interface{}, error))
   key := fmt.Sprintf("%v", lambda)
 
   // check if value already exists
@@ -32,7 +31,8 @@ func Memoize(lambda interface {}) (interface{}, error) {
       "key": key,
     })
 
-    value = fmt.Sprintf("%v", f())
+    result, _ := f()
+    value = fmt.Sprintf("%s", result)
 
     if err := client.Set(key, value, 0).Err(); err != nil {
       Logs("Failed to memoize value", Entry{

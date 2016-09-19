@@ -5,9 +5,7 @@ import (
   "runtime"
   "fmt"
   _ "log"
-  "net/http"
-  "io/ioutil"
-  app "github.com/callowaylc/ter"
+  app "github.com/callowaylc/zd"
 
 )
 
@@ -26,23 +24,9 @@ func main() {
   app.Logs(message, nil)
 
 
-  // get list and parse
-  content, err := app.Memoize(func() interface{} {
-    resp, err := http.Get(config.List)
-    if err != nil {
-      // handle error
-    }
-    defer resp.Body.Close()
-    body, err := ioutil.ReadAll(resp.Body)
+  app.Providers(1)
 
-    return string(body)
-  });
-
-  if err != nil {
-
-  }
-
-  fmt.Println(content)
+  // match items in content
 
   /*
   response, err := http.Get("http://www.theeroticreview.com")
