@@ -3,7 +3,8 @@ package zd
 import (
   "fmt"
   "regexp"
-  "os"
+  "strings"
+  "strconv"
 )
 
 func Providers(page int) ([]Provider, error) {
@@ -35,19 +36,25 @@ func Providers(page int) ([]Provider, error) {
   // parse list page
   r, _ := regexp.Compile("(?sm)<tr.+?review.+?</tr")
   matches := r.FindAllString(source, -1)
+  providers := make([]Provider, 15)
 
-  for _, match := range matches {
+  for i := 0; i < len(matches); i++ {
+    provider := Provider{}
+
     // match id
-    r = regexp.Compile("(?s)id=(?P<ID>[0-9]+)")
-    name := r.FindStringSubmatch(match)[1]
+    r = regexp.MustCompile("(?s)id=(?P<ID>[0-9]+)")
+    provider.ID, _ = strconv.Atoi(r.FindStringSubmatch(matches[i])[1])
 
     // name
-    r = regexp.Compile("(?s)id=(?P<ID>[0-9]+)")
-    name := r.FindStringSubmatch(match)[1]
+    r = regexp.MustCompile("(?sm)<a.+?>(.+?)</a")
+    provider.Name = strings.TrimSpace(r.FindStringSubmatch(matches[i])[1])
 
-    //fmt.Println(r.FindStringSubmatch(r.FindStringSubmatch(match)))
-    os.Exit(0)
+    providers[i] = provider
   }
 
-  return nil, nil
+  Logs("list.Providers: parsed provider list", Entry{
+    "providers": providers,
+  })
+
+  return providers, nil
 }

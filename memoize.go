@@ -2,7 +2,9 @@ package zd
 
 import (
   "fmt"
+  "time"
   "gopkg.in/redis.v4"
+
 )
 
 func Memoize(lambda interface {}) (interface{}, error) {
@@ -34,7 +36,7 @@ func Memoize(lambda interface {}) (interface{}, error) {
     result, _ := f()
     value = fmt.Sprintf("%s", result)
 
-    if err := client.Set(key, value, 0).Err(); err != nil {
+    if err := client.Set(key, value, time.Hour).Err(); err != nil {
       Logs("Failed to memoize value", Entry{
         "key": key,
       })
