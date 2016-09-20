@@ -3,6 +3,7 @@ package zd
 import (
   "fmt"
   "regexp"
+  "os"
 )
 
 func Providers(page int) ([]Provider, error) {
@@ -37,9 +38,15 @@ func Providers(page int) ([]Provider, error) {
 
   for _, match := range matches {
     // match id
-    r, _ = regexp.Compile("(?s)id=(?<id>[0-9]+)")
-    test := r.FindStringSubmatch(match)
-    fmt.Println(test)
+    r = regexp.Compile("(?s)id=(?P<ID>[0-9]+)")
+    name := r.FindStringSubmatch(match)[1]
+
+    // name
+    r = regexp.Compile("(?s)id=(?P<ID>[0-9]+)")
+    name := r.FindStringSubmatch(match)[1]
+
+    //fmt.Println(r.FindStringSubmatch(r.FindStringSubmatch(match)))
+    os.Exit(0)
   }
 
   return nil, nil
