@@ -16,7 +16,7 @@ func Providers(page int) ([]Provider, error) {
   content, err := Memoize(func() (interface{}, error) {
     body, _, err := HttpGet(fmt.Sprintf("%s?page=%d", config.List, page))
     if err != nil {
-      Logs("Failed to GET provider list", Entry{
+      Logs("Failed to GET providers list", Entry{
         "url": config.List,
         "page": page,
       })
@@ -27,7 +27,7 @@ func Providers(page int) ([]Provider, error) {
   });
 
   if err != nil {
-    Logs("Failed to memoize provider list", nil)
+    Logs("Failed to memoize providers list", nil)
     return nil, err
   }
 

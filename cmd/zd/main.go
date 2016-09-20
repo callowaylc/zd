@@ -23,22 +23,18 @@ func main() {
   message := fmt.Sprintf("start application with config %+v", config)
   app.Logs(message, nil)
 
+  providers, err := app.Providers(1)
+  if err != nil {
+    app.Logs("Failed to retrieve providers list", nil)
+    os.Exit(1)
+  }
 
-  app.Providers(1)
+  for _, provider := range providers {
+    app.GetProfile(provider)
+  }
 
   // match items in content
 
-  /*
-  response, err := http.Get("http://www.theeroticreview.com")
-  if err != nil {
-    log.Fatal(err)
-  }
-  defer response.Body.Close()
 
-  fmt.Println("response Status:", response.Status)
-  fmt.Println("response Headers:", response.Header)
-  body, _ := ioutil.ReadAll(response.Body)
-  fmt.Println("response Body:", string(body))
-  */
   os.Exit(0)
 }

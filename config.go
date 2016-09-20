@@ -14,7 +14,7 @@ type Database struct {
 type Site struct {
   Login string
   List string
-  Review string
+  Profile string
 }
 type Config struct {
   Site
