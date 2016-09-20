@@ -5,9 +5,20 @@ import (
   yaml "gopkg.in/yaml.v2"
 )
 
-type Config struct {
+type Database struct {
+  Host string
+  Name string
+  User string
+  Password string
+}
+type Site struct {
   Login string
   List string
+  Review string
+}
+type Config struct {
+  Site
+  Database
 }
 var c *Config
 
