@@ -10,6 +10,7 @@ type Database struct {
   Name string
   User string
   Password string
+  Port string
 }
 type Site struct {
   Login string

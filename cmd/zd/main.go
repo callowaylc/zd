@@ -34,6 +34,7 @@ func main() {
   }
 
   // match items in content
+  app.Query("hello")
 
 
   os.Exit(0)

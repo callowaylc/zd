@@ -14,7 +14,7 @@ func GetProfile(provider Provider) (Profile, error) {
 
   // get review page
   // var source string
-  content, err := Memoize(func() (interface{}, error) {
+  _, err := Memoize(func() (interface{}, error) {
     body, _, err := HttpGet(fmt.Sprintf("%s?id=%d", config.Profile, provider.ID))
     if err != nil {
       Logs("Failed to GET provider profile", Entry{
@@ -27,6 +27,5 @@ func GetProfile(provider Provider) (Profile, error) {
     return body, nil
   });
 
-  fmt.Printf("%s%s", content)
   return Profile{}, err
 }
