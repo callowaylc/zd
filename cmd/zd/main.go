@@ -30,11 +30,16 @@ func main() {
   }
 
   for _, provider := range providers {
-    app.GetProfile(provider)
+    _, err := app.GetProvider(provider.ID)
+    if err != nil {
+      app.Logs("failed to find provider", app.Entry{
+        "id": provider.ID,
+      })
+    }
   }
 
   // match items in content
-  app.Query("hello")
+  // app.Query("hello")
 
 
   os.Exit(0)
