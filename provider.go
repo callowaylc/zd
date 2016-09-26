@@ -46,6 +46,30 @@ func GetProvider(id int) (Provider, error) {
   return provider, nil
 }
 
-func CreateProvider(provider Provider) bool{
-  return false
+func CreateProvider(id int, name string) (bool, error) {
+  Logs("creating provider", Entry{
+    "id": id,
+    "name": name,
+    "method": "provider.CreateProvider",
+  })
+  _, err := DatabaseExec(`
+    INSERT INTO provider(
+      id, name
+    ) values (
+      ?, ?
+    )
+  `, id, name)
+
+  if err != nil {
+    Logs("failed to insert provider", Entry{
+      "id": id,
+      "name": name,
+      "method": "provider.CreateProvider",
+      "error": err,
+    })
+
+    return false, err
+  }
+
+  return true, nil
 }

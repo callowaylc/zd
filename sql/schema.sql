@@ -34,3 +34,5 @@ CREATE TABLE `provider` (
 --
 ALTER TABLE `provider`
   ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `provider` ADD `ts` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP AFTER `name`;

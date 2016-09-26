@@ -35,6 +35,8 @@ func main() {
       app.Logs("failed to find provider", app.Entry{
         "id": provider.ID,
       })
+
+      app.CreateProvider(provider.ID, provider.Name)
     }
   }
 
