@@ -20,23 +20,49 @@ func init() {
 
 func main() {
   config := app.GetConfig()
-  message := fmt.Sprintf("start application with config %+v", config)
-  app.Logs(message, nil)
+  app.Logs("application init", app.Entry{
+    "config": config,
+  })
 
-  providers, err := app.Providers(1)
-  if err != nil {
-    app.Logs("Failed to retrieve providers list", nil)
-    os.Exit(1)
+  retrieved := make(chan struct{ Provider; error }, 15)
+  verified := make(chan struct{ Provider; error }, 3)
+
+  // check for new providers and publish to list channel
+  go app.Providers(1, list)
+
+  // iterate through providers and check if they already in the system
+  for result := range list {
+    if result.err != nil {
+      app.Logs("error on providers channel", app.Entry{
+        "error": result.err,
+      })     
+
+    } else {
+      go func() {
+        if _, err := app.GetProvider(result.Provider.ID); err != nil {
+          // provider does not exist; we create it and publish to verified
+          app.Logs("failed to get provider", app.Entry{
+            "error": err,
+            "id": result.Provider.ID,
+          })
+          verified <- app.CreateProvider(result.Provider, verified)
+          
+        } else {
+          // provider already exists; submit to verified
+          verified <- result 
+        }
+      }()
+    }
   }
 
-  for _, provider := range providers {
-    _, err := app.GetProvider(provider.ID)
-    if err != nil {
-      app.Logs("failed to find provider", app.Entry{
-        "id": provider.ID,
+  for result := range exists {
+    if result.err != nil {
+      app.Logs("error on exists channel", app.Entry{
+        "error": result.err,
       })
 
-      app.CreateProvider(provider.ID, provider.Name)
+    } else {
+      go app.CreateProvider(result.Provider)
     }
   }
 

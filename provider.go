@@ -13,12 +13,18 @@ type Provider struct {
   ID int
 }
 
-func Providers(page int) ([]Provider, error) {
+func Providers(page int, com chan<- struct{ Provider; error }) {
   Logs("list.Providers", Entry{ "page": page, })
+  defer close(com)
   config := GetConfig()
+  pages := make(chan string)
 
   // get list page
   var source string
+  go func() {
+
+  }()
+
   content, err := Memoize(func() (interface{}, error) {
     body, _, err := HttpGet(fmt.Sprintf("%s?page=%d", config.List, page))
     if err != nil {
@@ -62,10 +68,12 @@ func Providers(page int) ([]Provider, error) {
     "providers": providers,
   })
 
+
+
   return providers, nil
 }
 
-func GetProvider(id int) (Provider, error) {
+func GetProvider(id int, com chan struct{ bool; error}) {
   Logs("Looking up provider", Entry{
     "id": id,
     "function": "provider.GetProvider",
