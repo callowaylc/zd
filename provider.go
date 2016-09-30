@@ -12,20 +12,19 @@ type Provider struct {
   Name string
   ID int
 }
+type ProviderCom struct {
+  Value Provider
+  Err error
+}
 
-func Providers(page int, com chan<- struct{ Provider; error }) {
+func Providers(page int, pipe chan<- ProviderCom) {
+  defer close(pipe)
   Logs("list.Providers", Entry{ "page": page, })
-  defer close(com)
+
   config := GetConfig()
-  pages := make(chan string)
 
   // get list page
-  var source string
-  go func() {
-
-  }()
-
-  content, err := Memoize(func() (interface{}, error) {
+  result, err := Memoize(func() (interface{}, error) {
     body, _, err := HttpGet(fmt.Sprintf("%s?page=%d", config.List, page))
     if err != nil {
       Logs("Failed to GET providers list", Entry{
@@ -37,43 +36,38 @@ func Providers(page int, com chan<- struct{ Provider; error }) {
 
     return body, nil
   });
-
   if err != nil {
-    Logs("Failed to memoize providers list", nil)
-    return nil, err
+    Logs("Failed to memoize providers list", Entry{
+      "error": err, 
+    })
+    pipe <- ProviderCom{
+      Provider{}, err,
+    }
   }
-
-  source = fmt.Sprintf("%s", content)
+  source := result.(string)
 
   // parse list page
-  r, _ := regexp.Compile("(?sm)<tr.+?review.+?</tr")
+  r := regexp.MustCompile("(?sm)<tr.+?review.+?</tr")
   matches := r.FindAllString(source, -1)
-  providers := make([]Provider, 15)
 
   for i := 0; i < len(matches); i++ {
-    provider := Provider{}
+    go func(match string) {
+      provider := Provider{}
 
-    // match id
-    r = regexp.MustCompile("(?s)id=(?P<ID>[0-9]+)")
-    provider.ID, _ = strconv.Atoi(r.FindStringSubmatch(matches[i])[1])
+      r = regexp.MustCompile("(?s)id=(?P<ID>[0-9]+)")
+      provider.ID, _ = strconv.Atoi(r.FindStringSubmatch(matches[i])[1])
 
-    // name
-    r = regexp.MustCompile("(?sm)<a.+?>(.+?)</a")
-    provider.Name = strings.TrimSpace(r.FindStringSubmatch(matches[i])[1])
+      r = regexp.MustCompile("(?sm)<a.+?>(.+?)</a")
+      provider.Name = strings.TrimSpace(r.FindStringSubmatch(matches[i])[1])
 
-    providers[i] = provider
+      pipe <- ProviderCom{
+        provider, nil,
+      }      
+    }(matches[i])
   }
-
-  Logs("list.Providers: parsed provider list", Entry{
-    "providers": providers,
-  })
-
-
-
-  return providers, nil
 }
 
-func GetProvider(id int, com chan struct{ bool; error}) {
+func GetProvider(id int) (Provider, error) {
   Logs("Looking up provider", Entry{
     "id": id,
     "function": "provider.GetProvider",

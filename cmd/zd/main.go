@@ -3,11 +3,13 @@ package main
 import (
   "os"
   "runtime"
-  "fmt"
+  _ "fmt"
   _ "log"
   app "github.com/callowaylc/zd"
 
 )
+
+const NumberProviders int = 15  
 
 func init() {
   if cpu := runtime.NumCPU(); cpu == 1 {
@@ -17,58 +19,65 @@ func init() {
   }
 }
 
-
 func main() {
   config := app.GetConfig()
   app.Logs("application init", app.Entry{
     "config": config,
   })
 
-  retrieved := make(chan struct{ Provider; error }, 15)
-  verified := make(chan struct{ Provider; error }, 3)
+  retrieved := make(chan app.ProviderCom, NumberProviders)
+  verified := make(chan app.ProviderCom, 3)
 
   // check for new providers and publish to list channel
-  go app.Providers(1, list)
+  go app.Providers(1, retrieved)
 
   // iterate through providers and check if they already in the system
-  for result := range list {
-    if result.err != nil {
+  for result := range retrieved {
+    provider := result.Value
+
+    if result.Err != nil {
       app.Logs("error on providers channel", app.Entry{
-        "error": result.err,
+        "error": result.Err,
       })     
 
     } else {
-      go func() {
-        if _, err := app.GetProvider(result.Provider.ID); err != nil {
+      go func(provider app.Provider) {
+        if _, err := app.GetProvider(provider.ID); err != nil {
           // provider does not exist; we create it and publish to verified
           app.Logs("failed to get provider", app.Entry{
             "error": err,
-            "id": result.Provider.ID,
+            "id": provider.ID,
           })
-          verified <- app.CreateProvider(result.Provider, verified)
-          
-        } else {
-          // provider already exists; submit to verified
-          verified <- result 
-        }
-      }()
+
+          _, err := app.CreateProvider(provider.ID, provider.Name)
+          if err != nil {
+            app.Logs("failed to create provider", app.Entry{
+              "error": err,
+              "id": provider.ID,
+            })
+            return
+          }          
+        } 
+
+        verified <- app.ProviderCom{ provider, nil, }
+      }(provider)
     }
   }
 
-  for result := range exists {
-    if result.err != nil {
-      app.Logs("error on exists channel", app.Entry{
-        "error": result.err,
-      })
+  for i := 0; i < cap(retrieved); i++ {
+    select {
+    case result := <-verified:
+      if result.Err != nil {
+        app.Logs("error on verified channel", app.Entry{
+          "error": result.Err,
+        })
 
-    } else {
-      go app.CreateProvider(result.Provider)
+      } else {
+        provider := result.Value
+        go app.CreateProvider(provider.ID, provider.Name)
+      }
     }
   }
-
-  // match items in content
-  // app.Query("hello")
-
 
   os.Exit(0)
 }
