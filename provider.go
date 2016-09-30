@@ -55,10 +55,10 @@ func Providers(page int, pipe chan<- ProviderCom) {
       provider := Provider{}
 
       r = regexp.MustCompile("(?s)id=(?P<ID>[0-9]+)")
-      provider.ID, _ = strconv.Atoi(r.FindStringSubmatch(matches[i])[1])
+      provider.ID, _ = strconv.Atoi(r.FindStringSubmatch(match)[1])
 
       r = regexp.MustCompile("(?sm)<a.+?>(.+?)</a")
-      provider.Name = strings.TrimSpace(r.FindStringSubmatch(matches[i])[1])
+      provider.Name = strings.TrimSpace(r.FindStringSubmatch(match)[1])
 
       pipe <- ProviderCom{
         provider, nil,
