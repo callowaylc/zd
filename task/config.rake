@@ -33,7 +33,7 @@ namespace :config do
   task :encrypt do
     exec %{
       name=$( basename `pwd` )
-      rm ./.config.yml
+      rm ./.config.yml 2>/dev/null
       openssl rand -base64 128 -out ./key
 
       # encrypt config file and write to ./.config.yml
@@ -57,8 +57,8 @@ namespace :config do
   desc "decrypt config"
   task :decrypt do
     exec %{
-      name=contact-email-crawler
-      rm -rf ./config.yml
+      name=$( basename `pwd` )
+      rm -rf ./config.yml 2>/dev/null
 
       # decrypt key file
       cat ./key.encrypted | openssl \
