@@ -25,11 +25,10 @@ func main() {
     "config": config,
   })
 
-  retrieved := make(chan app.ProviderCom, NumberProviders)
   verified := make(chan app.ProviderCom, 3)
 
   // check for new providers and publish to list channel
-  go app.Providers(1, retrieved)
+  retrieved := app.Providers(1)
 
   // iterate through providers and check if they already in the system
   for result := range retrieved {

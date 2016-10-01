@@ -6,6 +6,7 @@ import (
   "regexp"
   "strings"
   "strconv"
+  "sync"
 )
 
 type Provider struct {
@@ -17,11 +18,17 @@ type ProviderCom struct {
   Err error
 }
 
-func Providers(page int, pipe chan<- ProviderCom) {
-  defer close(pipe)
+const ProviderListNum int = 15
+
+func Providers(page int) <-chan ProviderCom {
   Logs("list.Providers", Entry{ "page": page, })
 
   config := GetConfig()
+  pipe := make(chan ProviderCom, ProviderListNum)
+
+  // setup wait group  
+  var wg sync.WaitGroup
+  wg.Add(ProviderListNum)
 
   // get list page
   result, err := Memoize(func() (interface{}, error) {
@@ -52,6 +59,7 @@ func Providers(page int, pipe chan<- ProviderCom) {
 
   for i := 0; i < len(matches); i++ {
     go func(match string) {
+      defer wg.Done()
       provider := Provider{}
 
       r = regexp.MustCompile("(?s)id=(?P<ID>[0-9]+)")
@@ -65,6 +73,13 @@ func Providers(page int, pipe chan<- ProviderCom) {
       }      
     }(matches[i])
   }
+
+  go func() {
+    wg.Wait()
+    close(pipe)
+  }()
+
+  return pipe
 }
 
 func GetProvider(id int) (Provider, error) {
@@ -126,7 +141,7 @@ func CreateProvider(id int, name string) (bool, error) {
     })
 
     return false, err
-  }
+  } 
 
   return true, nil
 }
