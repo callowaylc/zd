@@ -3,7 +3,7 @@ package zd
 import (
   "net/http"
   "io/ioutil"
-  "fmt"
+  _ "fmt"
 )
 
 func HttpGet(uri string) (string, http.Header, error) {
@@ -25,8 +25,6 @@ func HttpGet(uri string) (string, http.Header, error) {
       "response": response,
     })
   }
-
-  fmt.Println(string(body))
 
   return string(body), response.Header, nil
 }

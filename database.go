@@ -9,6 +9,10 @@ import (
 var db *sql.DB
 
 func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
+  Logs("query database", Entry{
+    "query": query,
+    "method": "database.DatabaseQuery",
+  })
   if err := initdb(); err != nil {
     Logs("database.DatabaseQuery: failed to init query", Entry{
       "query": query,
@@ -17,15 +21,31 @@ func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
     return nil, err
   }
 
-  rows, err := db.Query(query, arguments...)
+  statement, err := db.Prepare(query)
+  if err != nil {
+    Logs("database.DatabaseQuery: failed to prepare query", Entry{
+      "query": query,
+      "error": err,
+    })
+    return nil, err
+  }
+  defer statement.Close()
+  Logs("prepared statement succeeded", nil)
+
+  rows, err := statement.Query(arguments...)
   if err != nil {
     Logs("database.DatabaseQuery: failed to execute query", Entry{
       "query": query,
       "error": err,
     })
     return nil, err
-  }
+  }  
 
+  Logs("query succeeded", Entry{
+    "query": query,
+     "method": "database.DatabaseQuery",
+  })
+  
   return rows, nil
 }
 
