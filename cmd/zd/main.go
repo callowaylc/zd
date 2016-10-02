@@ -56,13 +56,18 @@ func main() {
             })
             return
           }          
-        } 
+        } else {
+          app.Logs("found provider", app.Entry{
+            "id": provider.ID,
+          })
+        }
 
         verified <- app.ProviderCom{ provider, nil, }
       }(provider)
     }
   }
 
+  /*
   for i := 0; i < cap(retrieved); i++ {
     select {
     case result := <-verified:
@@ -77,6 +82,7 @@ func main() {
       }
     }
   }
+  */
 
   os.Exit(0)
 }
