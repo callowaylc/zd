@@ -31,7 +31,8 @@ func main() {
   retrieved := app.Providers(1)
 
   // iterate through providers and check if they already in the system
-  for result := range retrieved {
+  for i := 0; i < cap(retrieved); i++ {
+    result := <-retrieved
     provider := result.Value
 
     if result.Err != nil {
@@ -66,23 +67,6 @@ func main() {
       }(provider)
     }
   }
-
-  /*
-  for i := 0; i < cap(retrieved); i++ {
-    select {
-    case result := <-verified:
-      if result.Err != nil {
-        app.Logs("error on verified channel", app.Entry{
-          "error": result.Err,
-        })
-
-      } else {
-        provider := result.Value
-        go app.CreateProvider(provider.ID, provider.Name)
-      }
-    }
-  }
-  */
 
   os.Exit(0)
 }
