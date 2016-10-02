@@ -2,11 +2,11 @@ package zd
 
 import (
   "fmt"
-  "database/sql"
-  _ "github.com/go-sql-driver/mysql"
+  "github.com/ziutek/mymysql/mysql"
+  _ "github.com/ziutek/mymysql/native" // Native engine
 )
 
-var db *sql.DB
+var db *mysql.Conn
 
 func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
   Logs("query database", Entry{
@@ -78,9 +78,11 @@ func initdb() error{
       "user": config.User,
       "host": config.Host,
     })
-    db, _ = sql.Open("mysql", connectionString())
 
-    if err := db.Ping(); err != nil {
+    address := fmt.Sprintf("%s:%s", config.Host, config.Port)
+    db := mysql.New("tcp", "", address, config.User, config.Password, config.Name)
+
+    if err := db.Connect(); err != nil {
       Logs("Failed to connect to database", Entry{
         "name": config.Name,
         "user": config.User,
