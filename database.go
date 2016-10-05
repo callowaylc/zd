@@ -2,24 +2,27 @@ package zd
 
 import (
   "fmt"
-  "github.com/ziutek/mymysql/mysql"
-  _ "github.com/ziutek/mymysql/native" // Native engine
+  "database/sql"
+  "os"
+  _ "github.com/go-sql-driver/mysql"
 )
 
-var db *mysql.Conn
+var db *sql.DB
+
+func init() {
+  if err := initdb(); err != nil {
+    Logs("database.DatabaseQuery: failed to init database", Entry{
+      "error": err,
+    })
+    os.Exit(1)
+  }  
+}
 
 func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
   Logs("query database", Entry{
     "query": query,
     "method": "database.DatabaseQuery",
   })
-  if err := initdb(); err != nil {
-    Logs("database.DatabaseQuery: failed to init query", Entry{
-      "query": query,
-      "error": err,
-    })
-    return nil, err
-  }
 
   statement, err := db.Prepare(query)
   if err != nil {
@@ -30,7 +33,6 @@ func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
     return nil, err
   }
   defer statement.Close()
-  Logs("prepared statement succeeded", nil)
 
   rows, err := statement.Query(arguments...)
   if err != nil {
@@ -43,20 +45,17 @@ func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
 
   Logs("query succeeded", Entry{
     "query": query,
-     "method": "database.DatabaseQuery",
+    "method": "database.DatabaseQuery",
   })
   
   return rows, nil
 }
 
 func DatabaseExec(query string, arguments ...interface{}) (sql.Result, error) {
-  if err := initdb(); err != nil {
-    Logs("database.DatabaseExec: failed to init query", Entry{
-      "query": query,
-      "error": err,
-    })
-    return nil, err
-  }
+  Logs("query database", Entry{
+    "query": query,
+    "method": "database.DatabaseExec",
+  })
 
   result, err := db.Exec(query, arguments...)
   if err != nil {
@@ -78,11 +77,9 @@ func initdb() error{
       "user": config.User,
       "host": config.Host,
     })
+    db, _ = sql.Open("mysql", connectionString())
 
-    address := fmt.Sprintf("%s:%s", config.Host, config.Port)
-    db := mysql.New("tcp", "", address, config.User, config.Password, config.Name)
-
-    if err := db.Connect(); err != nil {
+    if err := db.Ping(); err != nil {
       Logs("Failed to connect to database", Entry{
         "name": config.Name,
         "user": config.User,

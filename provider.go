@@ -57,6 +57,8 @@ func Providers(page int) <-chan ProviderCom {
   r := regexp.MustCompile("(?sm)<tr.+?review.+?</tr")
   matches := r.FindAllString(source, -1)
 
+  Logs("matched providers", Entry{ "number": len(matches), })
+
   for i := 0; i < len(matches); i++ {
     go func(match string) {
       defer wg.Done()
@@ -76,6 +78,7 @@ func Providers(page int) <-chan ProviderCom {
 
   go func() {
     wg.Wait()
+    Logs("finished matching providers", nil)
     close(pipe)
   }()
 
@@ -87,7 +90,9 @@ func GetProvider(id int) (Provider, error) {
     "id": id,
     "function": "provider.GetProvider",
   })
+
   provider := Provider{}
+
   rows, err := DatabaseQuery(`
     SELECT id, name
     FROM provider
@@ -121,7 +126,6 @@ func GetProvider(id int) (Provider, error) {
 func CreateProvider(id int, name string) (bool, error) {
   Logs("creating provider", Entry{
     "id": id,
-    "name": name,
     "method": "provider.CreateProvider",
   })
   _, err := DatabaseExec(`

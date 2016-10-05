@@ -25,10 +25,10 @@ func main() {
     "config": config,
   })
 
-  verified := make(chan app.ProviderCom, 3)
 
   // check for new providers and publish to list channel
   retrieved := app.Providers(1)
+  verified := make(chan app.ProviderCom, cap(retrieved))
 
   // iterate through providers and check if they already in the system
   for i := 0; i < cap(retrieved); i++ {
@@ -67,6 +67,8 @@ func main() {
       }(provider)
     }
   }
+
+  app.Logs("exiting", nil)  
 
   os.Exit(0)
 }
