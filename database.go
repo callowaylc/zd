@@ -25,11 +25,7 @@ func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
     "method": "database.DatabaseQuery",
   })
 
-  var mutex = &sync.Mutex{}
-  mutex.Lock()
   statement, err := db.Prepare(query)
-  mutex.Unlock()
-  Logs("unlock", nil)
 
   if err != nil {
     Logs("database.DatabaseQuery: failed to prepare query", Entry{
