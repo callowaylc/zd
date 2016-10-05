@@ -78,7 +78,10 @@ func Providers(page int) <-chan ProviderCom {
 
   go func() {
     wg.Wait()
-    Logs("finished matching providers", nil)
+    Logs("finished matching providers xxgg", nil)
+    pipe <- ProviderCom{
+      Provider{}, errors.New("closing pipe xxgg"),
+    }
     close(pipe)
   }()
 
