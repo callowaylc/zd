@@ -3,6 +3,7 @@ package main
 import (
   "os"
   "runtime"
+  "sync"
   _ "fmt"
   _ "log"
   app "github.com/callowaylc/zd"
@@ -31,17 +32,21 @@ func main() {
   verified := make(chan app.ProviderCom, cap(retrieved))
 
   // iterate through providers and check if they already in the system
+  var wg sync.WaitGroup
+  wg.Add(cap(retrieved))
+
   for i := 0; i < cap(retrieved); i++ {
-    result := <-retrieved
-    provider := result.Value
+    go func() {
+      defer wg.Done()
+      result := <-retrieved
+      provider := result.Value
 
-    if result.Err != nil {
-      app.Logs("error on providers channel", app.Entry{
-        "error": result.Err,
-      })     
+      if result.Err != nil {
+        app.Logs("error on providers channel", app.Entry{
+          "error": result.Err,
+        })     
 
-    } else {
-      go func(provider app.Provider) {
+      } else {
         if _, err := app.GetProvider(provider.ID); err != nil {
           // provider does not exist; we create it and publish to verified
           app.Logs("failed to get provider", app.Entry{
@@ -64,11 +69,12 @@ func main() {
         }
 
         verified <- app.ProviderCom{ provider, nil, }
-      }(provider)
-    }
+      }
+    }()
   }
 
-  app.Logs("exiting", nil)  
+  wg.Wait()
+  app.Logs("finished verifying providers", nil)  
 
   os.Exit(0)
 }
