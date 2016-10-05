@@ -3,7 +3,7 @@ package main
 import (
   "os"
   "runtime"
-  _ "sync"
+  "sync"
   _ "fmt"
   _ "log"
   app "github.com/callowaylc/zd"
@@ -26,6 +26,7 @@ func main() {
     "config": config,
   })
 
+  var wg sync.WaitGroup
 
   // check for new providers and publish to list channel
   retrieved := app.Providers(1)
@@ -34,14 +35,24 @@ func main() {
   // iterate through providers and check if they already in the system
   for {
     result := <-retrieved
-    if result.Err != nil {
-      app.Logs("error on providers channel", app.Entry{
-        "error": result.Err,
+    if err, ok := result.Err.(app.ChannelClosed); ok {
+      app.Logs("finished verifying retrieved providers", app.Entry{
+        "error": err,
       })
       break
     }
 
+    wg.Add(1)
     go func(result app.ProviderCom) {
+      defer wg.Done()
+
+      if result.Err != nil {
+        app.Logs("error on retrieved channel", app.Entry{
+          "error": result.Err,
+        })
+        return
+      }
+
       provider := result.Value
 
       if _, err := app.GetProvider(provider.ID); err != nil {
@@ -69,6 +80,7 @@ func main() {
     }(result)
   }
 
+  wg.Wait()
   app.Logs("finished verifying providers", nil)
   os.Exit(0)
 }

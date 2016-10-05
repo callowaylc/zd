@@ -9,6 +9,8 @@ import (
   "sync"
 )
 
+const ProviderListNum int = 15
+
 type Provider struct {
   Name string
   ID int
@@ -17,8 +19,13 @@ type ProviderCom struct {
   Value Provider
   Err error
 }
+type ChannelClosed struct {
+  message string
+}
 
-const ProviderListNum int = 15
+func (c ChannelClosed) Error() string {
+  return c.message
+}
 
 func Providers(page int) <-chan ProviderCom {
   Logs("list.Providers", Entry{ "page": page, })
@@ -26,7 +33,7 @@ func Providers(page int) <-chan ProviderCom {
   config := GetConfig()
   pipe := make(chan ProviderCom, ProviderListNum)
 
-  // setup wait group  
+  // setup wait group
   var wg sync.WaitGroup
   wg.Add(ProviderListNum)
 
@@ -45,7 +52,7 @@ func Providers(page int) <-chan ProviderCom {
   });
   if err != nil {
     Logs("Failed to memoize providers list", Entry{
-      "error": err, 
+      "error": err,
     })
     pipe <- ProviderCom{
       Provider{}, err,
@@ -72,7 +79,7 @@ func Providers(page int) <-chan ProviderCom {
 
       pipe <- ProviderCom{
         provider, nil,
-      }      
+      }
     }(matches[i])
   }
 
@@ -80,7 +87,7 @@ func Providers(page int) <-chan ProviderCom {
     wg.Wait()
     Logs("finished matching providers xxgg", nil)
     pipe <- ProviderCom{
-      Provider{}, errors.New("closing pipe xxgg"),
+      Provider{}, ChannelClosed{ "closed retrieved channel" },
     }
     close(pipe)
   }()
@@ -148,7 +155,7 @@ func CreateProvider(id int, name string) (bool, error) {
     })
 
     return false, err
-  } 
+  }
 
   return true, nil
 }
