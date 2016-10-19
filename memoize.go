@@ -36,7 +36,7 @@ func Memoize(lambda interface {}) (interface{}, error) {
     result, _ := f()
     value = fmt.Sprintf("%s", result)
 
-    if err := client.Set(key, value, time.Hour).Err(); err != nil {
+    if err := client.Set(key, value, time.Hour * 60).Err(); err != nil {
       Logs("Failed to memoize value", Entry{
         "key": key,
       })

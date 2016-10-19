@@ -159,3 +159,18 @@ func CreateProvider(id int, name string) (bool, error) {
 
   return true, nil
 }
+
+type ProviderAttributes struct{ }
+func (_ ProviderAttributes) Process(in <-chan Packet) chan Packet {
+  Logs("process provider attributes", Entry{
+    "method": "ProviderAttributes#Process",
+  })
+  var out chan Packet = make(chan Packet, 5)
+
+  for packet := range in {
+    provider := packet.Value.(Provider)
+    fmt.Println(provider)
+  }
+
+  return out
+}

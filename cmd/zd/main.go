@@ -33,8 +33,7 @@ func main() {
   verified := make(chan app.ProviderCom, cap(retrieved))
 
   // iterate through providers and check if they already in the system
-  for {
-    result := <-retrieved
+  for result:= range retrieved {
     if err, ok := result.Err.(app.ChannelClosed); ok {
       app.Logs("finished verifying retrieved providers", app.Entry{
         "error": err,
@@ -79,8 +78,22 @@ func main() {
       verified <- app.ProviderCom{ provider, nil, }
     }(result)
   }
-
   wg.Wait()
+  close(verified)
+
+  // temporary feed into channel of Packet
+  comm := make(chan app.Packet, len(verified))
+
+  for v := range verified {
+    comm <- app.Packet{
+      v.Value, nil,
+    }
+  }
+  close(comm)
+
+  // collect and update provider attributes
+  comm = app.ProviderAttributes{}.Process(comm)
+
   app.Logs("finished verifying providers", nil)
   os.Exit(0)
 }
