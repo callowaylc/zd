@@ -2,7 +2,6 @@ package main
 
 import (
   "os"
-  "runtime"
   "sync"
   _ "fmt"
   _ "log"
@@ -13,11 +12,9 @@ import (
 const NumberProviders int = 15
 
 func init() {
-  if cpu := runtime.NumCPU(); cpu == 1 {
-    runtime.GOMAXPROCS(2)
-  } else {
-    runtime.GOMAXPROCS(cpu)
-  }
+  app.InitLogger()
+  app.InitFlags()
+  app.InitDatabase()
 }
 
 func main() {
@@ -25,6 +22,7 @@ func main() {
   app.Logs("application init", app.Entry{
     "config": config,
   })
+  return
 
   var wg sync.WaitGroup
 

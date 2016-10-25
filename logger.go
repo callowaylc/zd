@@ -9,7 +9,7 @@ import (
 
 type Entry map[string]interface{}
 
-func init() {
+func InitLogger() {
   log.SetFormatter(&log.JSONFormatter{})
   log.SetOutput(os.Stderr)
   log.SetLevel(log.InfoLevel)

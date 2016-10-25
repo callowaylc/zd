@@ -9,15 +9,6 @@ import (
 
 var db *sql.DB
 
-func init() {
-  if err := initdb(); err != nil {
-    Logs("database.DatabaseQuery: failed to init database", Entry{
-      "error": err,
-    })
-    os.Exit(1)
-  }  
-}
-
 func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
   Logs("query database", Entry{
     "query": query,
@@ -42,13 +33,13 @@ func DatabaseQuery(query string, arguments ...interface{}) (*sql.Rows, error) {
       "error": err,
     })
     return nil, err
-  }  
+  }
 
   Logs("query succeeded", Entry{
     "query": query,
     "method": "database.DatabaseQuery",
   })
-  
+
   return rows, nil
 }
 
@@ -70,7 +61,7 @@ func DatabaseExec(query string, arguments ...interface{}) (sql.Result, error) {
   return result, nil
 }
 
-func initdb() error{
+func InitDatabase() error{
   if db == nil {
     config := GetConfig()
     Logs("Opening database connection", Entry{
@@ -87,7 +78,7 @@ func initdb() error{
         "host": config.Host,
         "error": err,
       })
-      return err
+      os.Exit(1)
     }
   }
 

@@ -2,6 +2,7 @@ package zd
 
 import (
   "io/ioutil"
+  "os"
   yaml "gopkg.in/yaml.v2"
 )
 
@@ -21,21 +22,19 @@ type Config struct {
   Site
   Database
 }
-var c *Config
+var c Config = Config{}
 
-func GetConfig() Config {
-  if c == nil {
-    c = &Config{}
-    contents, err := ioutil.ReadFile("./config.yml")
-    check(err)
-    yaml.Unmarshal([]byte(contents), c)
+func InitConfig() {
+  contents, err := ioutil.ReadFile("./config.yml")
+  if err != nil {
+    Logs("Failed to load config", Entry{
+      "error": err,
+    })
+    os.Exit(1)
   }
-
-  return *c
+  yaml.Unmarshal([]byte(contents), c)
 }
 
-func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+func GetConfig() Config {
+  return c
 }
